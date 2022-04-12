@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PolylineOptions op;
     private int cl;
     private LatLng p2;
+    public static Boolean isWalking;
 
     @Override
     protected void onResume() {

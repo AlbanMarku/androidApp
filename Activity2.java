@@ -45,8 +45,7 @@ public class Activity2 extends AppCompatActivity {
         resBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //ma.cleardb();
-                //openResultsActivity();
+                openResultsActivity();
             }
         });
     }

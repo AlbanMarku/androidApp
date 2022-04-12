@@ -30,6 +30,7 @@ public class GPS_Service extends Service {
     private Float mphFl = 0f;
     private Float prevMphFl = 0f;
     public Integer eventInt;
+    private MainActivity ma;
 
 
     @Nullable
@@ -41,6 +42,8 @@ public class GPS_Service extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
+        MainActivity.isWalking= true;
+        Log.i("walk","reading not crashed");
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
