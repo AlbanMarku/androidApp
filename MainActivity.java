@@ -24,6 +24,8 @@ import android.os.Debug;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Button btnStart, btnStop;
     private TextView textView;
+    private Switch sw;
     private BroadcastReceiver broadcastReceiver;
     private GoogleMap mMap;
     private Marker marker;
@@ -76,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
-        if(broadcastReceiver == null) {
+        if (broadcastReceiver == null) {
             broadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -84,43 +87,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     String m1 = intent.getExtras().get("coords").toString();
                     String m2 = intent.getExtras().get("coords2").toString();
                     Integer iEvent = Integer.parseInt(intent.getExtras().get("intValue").toString());
-                    Log.i("iEvent",iEvent.toString() + "YOOOOOOOO"); //checking value of event
+                    Log.i("iEvent", iEvent.toString() + "YOOOOOOOO"); //checking value of event
                     Float f = Float.parseFloat(m1);
                     Float f2 = Float.parseFloat(m2);
-                    lt = new LatLng(f,f2);
+                    lt = new LatLng(f, f2);
                     list.add(lt);
                     getSessionDate();
-                    //databaseMethod();
-                    if (list.size() <=1) {
+                    if (list.size() <= 1) {
                         LatLng sp = lt;//Need to get current location on service start.
                         marker = mMap.addMarker(new MarkerOptions().position(sp).draggable(true));
                     }
-                    //for (int i = 0; i < list.size(); i++) { // clean up code if this if statement isn't needed anymore.
-                        switch (iEvent){
-                            case 2:
-                                Log.i("bigger","THAT WAS BIG GAS");
-                                cl = context.getResources().getColor(R.color.teal_200);
-                                break;
-                            case 1:
-                                Log.i("bigger","THAT WAS BIG BREAK");
-                                cl = context.getResources().getColor(R.color.red);
-                                break;
-                            case 0:
-                                Log.i("bigger","SMOOTH AF");
-                                cl = context.getResources().getColor(R.color.black);
-                                break;
-                        }
-                        LatLng p1 = list.get(list.size() - 1);
-                        if(list.size() > 1) {
-                            p2 = list.get(list.size() - 2);
-                        } else {
-                            p2 = p1;
-                        }
-                        op = new PolylineOptions().add(p1).add(p2);
-                        Polyline polyline = mMap.addPolyline(op);
-                        polyline.setColor(cl);
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt,15));
-                   // }
+                    switch (iEvent) {
+                        case 2:
+                            Log.i("bigger", "THAT WAS BIG GAS");
+                            cl = context.getResources().getColor(R.color.teal_200);
+                            break;
+                        case 1:
+                            Log.i("bigger", "THAT WAS BIG BREAK");
+                            cl = context.getResources().getColor(R.color.red);
+                            break;
+                        case 3:
+                            cl = context.getResources().getColor(R.color.purple_500);
+                            break;
+                        case 0:
+                            Log.i("bigger", "SMOOTH AF");
+                            cl = context.getResources().getColor(R.color.black);
+                            break;
+                    }
+                    LatLng p1 = list.get(list.size() - 1);
+                    if (list.size() > 1) {
+                        p2 = list.get(list.size() - 2);
+                    } else {
+                        p2 = p1;
+                    }
+                    op = new PolylineOptions().add(p1).add(p2);
+                    Polyline polyline = mMap.addPolyline(op);
+                    polyline.setColor(cl);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 15));
                 }
             };
         }
@@ -130,20 +133,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void pushToDatabase() {
         OkHttpClient okHttpClient = new OkHttpClient();
         newSession = false;
-        for (int i=0; i < list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
 
-            RequestBody formbody = new FormBody.Builder().add("value",list.get(i).toString()).add("test",newSession.toString()).add("timeVal",getSessionDate()).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).build();
 
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    Log.i("error","I didn't find anything");
+                    Log.i("error", "I didn't find anything");
                 }
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                    Log.i("connectionFound",response.body().string());
+                    Log.i("connectionFound", response.body().string());
                 }
             });
         }
@@ -197,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(broadcastReceiver != null) {
+        if (broadcastReceiver != null) {
             unregisterReceiver(broadcastReceiver);
         }
     }
@@ -210,14 +213,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnStart = (Button) findViewById(R.id.startButton);
         btnStop = (Button) findViewById(R.id.stopButton);
         textView = (TextView) findViewById(R.id.coordsText);
-        //isWalking = true;
+        sw = (Switch) findViewById(R.id.walkSwitch);
         list = new ArrayList<>();
 
-        if(!runtime_permissions()) {
+        if (!runtime_permissions()) {
             enable_buttons();
         }
 
-        SupportMapFragment supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         supportMapFragment.getMapAsync(this);
 
 
@@ -226,41 +229,52 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void cleardb() {
         OkHttpClient okHttpClient = new OkHttpClient();
         newSession = true;
-        RequestBody formbody = new FormBody.Builder().add("test",newSession.toString()).build();
+        RequestBody formbody = new FormBody.Builder().add("test", newSession.toString()).build();
 
         Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.i("error","I didn't find anything");
+                Log.i("error", "I didn't find anything");
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Log.i("connectionFound",response.body().string());
+                Log.i("connectionFound", response.body().string());
             }
         });
     }
 
     private void enable_buttons() {
 
-        btnStart.setOnClickListener(new View.OnClickListener(){
+        btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(),GPS_Service.class);
+                Intent i = new Intent(getApplicationContext(), GPS_Service.class);
                 startService(i);
                 //cleardb();
             }
         });
 
-        btnStop.setOnClickListener(new View.OnClickListener(){
+        btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(),GPS_Service.class);
+                Intent i = new Intent(getApplicationContext(), GPS_Service.class);
                 stopService(i);
                 pushToDatabase();
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt,10));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 10));
                 //goToUrl("https://albonoproj.herokuapp.com");
+            }
+        });
+
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b) {
+                    isWalking = true;
+                } else {
+                    isWalking = false;
+                }
             }
         });
 
@@ -268,13 +282,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void goToUrl(String s) {
         Uri url = Uri.parse(s);
-        startActivity(new Intent(Intent.ACTION_VIEW,url));
+        startActivity(new Intent(Intent.ACTION_VIEW, url));
 
     }
 
     private boolean runtime_permissions() {
-        if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},100);
+        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 100);
             return true;
         }
         return false;
@@ -283,10 +297,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == 100){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == 100) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 enable_buttons();
-            }else {
+            } else {
                 runtime_permissions();
             }
         }

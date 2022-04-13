@@ -42,24 +42,23 @@ public class GPS_Service extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
-        MainActivity.isWalking= true;
-        Log.i("walk","reading not crashed");
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 speedFl = location.getSpeed();
                 prevMphFl = mphFl;
-                mphFl= speedFl * 2.2369f;
-                Log.i("speed",mphFl.toString() + " mph");
-                Log.i("speedDifference","PREV  " +prevMphFl.toString()+"  " +"NOW  "+mphFl.toString());
-               // if (prevMphFl != 0f) { // Test if this is good condition to stop init big  gas
-                    compareSpeed();
-               // }
+                mphFl = speedFl * 2.2369f;
+                Log.i("speed", mphFl.toString() + " mph");
+                Log.i("speedDifference", "PREV  " + prevMphFl.toString() + "  " + "NOW  " + mphFl.toString());
+                // if (prevMphFl != 0f) { // Test if this is good condition to stop init big  gas
+                compareSpeed();
+                // }
                 Intent i = new Intent("location update");
                 i.putExtra("coords", location.getLatitude());
                 i.putExtra("coords2", location.getLongitude());
                 i.putExtra("intValue", eventInt);
                 sendBroadcast(i);
+
             }
 
             @Override
@@ -74,16 +73,20 @@ public class GPS_Service extends Service {
     }
 
     public int compareSpeed() {
-        if (mphFl - prevMphFl <= -10f) {
-            Log.i("checkSlow","Big breaks");
+        if (mphFl - prevMphFl <= -10f && !MainActivity.isWalking) {
+            Log.i("checkSlow", "Big breaks");
             eventInt = 1;
             return 1;
-        } else if(mphFl - prevMphFl >= 10f) {
-            Log.i("checkSlow","Big gas");
+        } else if (mphFl - prevMphFl >= 10f && !MainActivity.isWalking) {
+            Log.i("checkSlow", "Big gas");
             eventInt = 2;
             return 2;
+        } else if (MainActivity.isWalking) {
+            Log.i("checkSlow", "EVENT 3");
+            eventInt = 3;
+            return 3;
         } else {
-            Log.i("checkSlow","No event");
+            Log.i("checkSlow", "No event");
             eventInt = 0;
             return 0;
         }
@@ -93,7 +96,7 @@ public class GPS_Service extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(location != null) {
+        if (location != null) {
             location.removeUpdates(listener);
         }
     }
