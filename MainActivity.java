@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private Marker marker;
     public ArrayList<LatLng> list;
+    public ArrayList<String> walkList;
     private PolylineOptions polylineOptions;
     public LatLng lt;
     private LocationListener locationListener;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PolylineOptions op;
     private int cl;
     private LatLng p2;
-    public static Boolean isWalking;
+    public static Boolean isWalking = false;
 
     @Override
     protected void onResume() {
@@ -87,14 +88,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     String m1 = intent.getExtras().get("coords").toString();
                     String m2 = intent.getExtras().get("coords2").toString();
                     Integer iEvent = Integer.parseInt(intent.getExtras().get("intValue").toString());
-                    Log.i("iEvent", iEvent.toString() + "YOOOOOOOO"); //checking value of event
+                    Log.i("iEvent", iEvent.toString() + "YOOOOOOOO");
                     Float f = Float.parseFloat(m1);
                     Float f2 = Float.parseFloat(m2);
                     lt = new LatLng(f, f2);
                     list.add(lt);
+                    walkList.add(isWalking.toString());
+                    Log.i("list", list.toString());
                     getSessionDate();
                     if (list.size() <= 1) {
-                        LatLng sp = lt;//Need to get current location on service start.
+                        LatLng sp = lt;
                         marker = mMap.addMarker(new MarkerOptions().position(sp).draggable(true));
                     }
                     switch (iEvent) {
@@ -133,9 +136,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void pushToDatabase() {
         OkHttpClient okHttpClient = new OkHttpClient();
         newSession = false;
+
         for (int i = 0; i < list.size(); i++) {
 
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).build();
 
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
@@ -215,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         textView = (TextView) findViewById(R.id.coordsText);
         sw = (Switch) findViewById(R.id.walkSwitch);
         list = new ArrayList<>();
+        walkList = new ArrayList<>();
 
         if (!runtime_permissions()) {
             enable_buttons();
@@ -252,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onClick(View view) {
                 Intent i = new Intent(getApplicationContext(), GPS_Service.class);
                 startService(i);
-                //cleardb();
+                cleardb();
             }
         });
 
@@ -263,6 +268,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 stopService(i);
                 pushToDatabase();
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 10));
+                newSession = true; // sussy
                 //goToUrl("https://albonoproj.herokuapp.com");
             }
         });
