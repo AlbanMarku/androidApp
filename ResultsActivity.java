@@ -5,12 +5,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -26,6 +34,7 @@ public class ResultsActivity extends AppCompatActivity {
 
     private TextView txt;
     private Button btn;
+    private ImageView iv;
     private String dayVal;
 
     @Override
@@ -35,6 +44,7 @@ public class ResultsActivity extends AppCompatActivity {
 
         txt = (TextView) findViewById(R.id.txtRes);
         btn = (Button) findViewById(R.id.dayBtn);
+        iv  = (ImageView) findViewById(R.id.imageViewMap);
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,7 +116,34 @@ public class ResultsActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 txt.setText(response.body().string());
+                Log.i("eventRecord","There have been " + String.valueOf(MainActivity.events));
+                loadImageFromStorage("/data/data/com.example.myapplicationtestmapfrag/app_imageDir");
             }
         });
     }
+
+    private void loadImageFromStorage(String path)
+    {
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                // Stuff that updates the UI
+                try {
+                    File f=new File(path, "map.jpg");
+                    Log.i("wheretho", "IIIIIN");
+                    Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
+                    iv.setImageBitmap(b);
+                }
+                catch (FileNotFoundException e)
+                {
+                    Log.i("wheretho", "I didn't find anything");
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+
 }

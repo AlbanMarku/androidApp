@@ -3,15 +3,19 @@ package com.example.myapplicationtestmapfrag;
 import static android.content.ContentValues.TAG;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -21,10 +25,13 @@ import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +48,9 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.text.DateFormat;
@@ -62,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Button btnStart, btnStop;
     private TextView textView;
     private Switch sw;
+    private ImageView iv;
     private BroadcastReceiver broadcastReceiver;
     private GoogleMap mMap;
     private Marker marker;
@@ -76,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int cl;
     private LatLng p2;
     public static Boolean isWalking = false;
+    public static int events= 0;
 
     @Override
     protected void onResume() {
@@ -104,10 +116,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         case 2:
                             Log.i("bigger", "THAT WAS BIG GAS");
                             cl = context.getResources().getColor(R.color.teal_200);
+                            events++;
                             break;
                         case 1:
                             Log.i("bigger", "THAT WAS BIG BREAK");
                             cl = context.getResources().getColor(R.color.red);
+                            events++;
                             break;
                         case 3:
                             cl = context.getResources().getColor(R.color.purple_500);
@@ -191,16 +205,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return "Unknown Date";
     }
 
-//    private void databaseMethod() {
-//        DataModel dataModel = new DataModel(lt,-1,getSessionDate());
-//
-//        DAHelper daHelper = new DAHelper(MainActivity.this);
-//
-//        boolean success = daHelper.addOne(dataModel);
-//
-//        Toast.makeText(MainActivity.this,"success" +success,Toast.LENGTH_SHORT).show();
-//    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -218,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnStop = (Button) findViewById(R.id.stopButton);
         textView = (TextView) findViewById(R.id.coordsText);
         sw = (Switch) findViewById(R.id.walkSwitch);
+        iv = (ImageView) findViewById(R.id.imageViewBity);
         list = new ArrayList<>();
         walkList = new ArrayList<>();
 
@@ -250,6 +255,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private String saveToInternalStorage(Bitmap bitmapImage){
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        // path to /data/data/com.example.myapplicationtestmapfrag/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath=new File(directory,"map.jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
+
     private void enable_buttons() {
 
         btnStart.setOnClickListener(new View.OnClickListener() {
@@ -270,6 +299,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 10));
                 newSession = true; // sussy
                 //goToUrl("https://albonoproj.herokuapp.com");
+
+                final Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after delay
+                        mMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                            @Override
+                            public void onSnapshotReady(@Nullable Bitmap bitmap) {
+                                Bitmap bt = bitmap;
+                                saveToInternalStorage(bt);
+                                iv.setImageBitmap(bt);
+                                //loadImageFromStorage("/data/data/com.example.myapplicationtestmapfrag/app_imageDir");
+                            }
+                        });
+                    }
+                }, 3000);
+
             }
         });
 
