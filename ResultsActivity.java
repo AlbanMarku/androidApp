@@ -117,6 +117,12 @@ public class ResultsActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 txt.setText(response.body().string());
                 Log.i("eventRecord","There have been " + String.valueOf(MainActivity.events));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        iv.setImageDrawable(null);
+                    }
+                });
                 loadImageFromStorage("/data/data/com.example.myapplicationtestmapfrag/app_imageDir");
             }
         });
@@ -131,7 +137,7 @@ public class ResultsActivity extends AppCompatActivity {
 
                 // Stuff that updates the UI
                 try {
-                    File f=new File(path, "map.jpg");
+                    File f=new File(path, dayVal+".jpg");
                     Log.i("wheretho", "IIIIIN");
                     Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
                     iv.setImageBitmap(b);

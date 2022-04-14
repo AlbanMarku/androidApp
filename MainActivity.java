@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // path to /data/data/com.example.myapplicationtestmapfrag/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         // Create imageDir
-        File mypath=new File(directory,"map.jpg");
+        File mypath=new File(directory,getSessionDate()+".jpg");
 
         FileOutputStream fos = null;
         try {
