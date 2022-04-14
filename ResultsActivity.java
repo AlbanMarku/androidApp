@@ -36,6 +36,7 @@ public class ResultsActivity extends AppCompatActivity {
     private Button btn;
     private ImageView iv;
     private String dayVal;
+    private String workUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +91,11 @@ public class ResultsActivity extends AppCompatActivity {
                                 break;
                         }
                         if(dayVal != null) {
+                            if(MainActivity.isWorking == true) {
+                                workUrl = "toWork";
+                            } else {
+                                workUrl = "toHome";
+                            }
                             displayResults();
                         }
                     }
@@ -106,7 +112,7 @@ public class ResultsActivity extends AppCompatActivity {
 
 
         OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/results/"+dayVal).build();
+        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+dayVal).build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -137,7 +143,7 @@ public class ResultsActivity extends AppCompatActivity {
 
                 // Stuff that updates the UI
                 try {
-                    File f=new File(path, dayVal+".jpg");
+                    File f=new File(path, dayVal+MainActivity.isWorking.toString()+".jpg");
                     Log.i("wheretho", "IIIIIN");
                     Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
                     iv.setImageBitmap(b);

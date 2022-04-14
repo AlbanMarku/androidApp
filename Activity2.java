@@ -3,6 +3,8 @@ package com.example.myapplicationtestmapfrag;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
@@ -27,6 +29,7 @@ public class Activity2 extends AppCompatActivity {
     private Button button;
     private MainActivity ma;
     private Button resBtn;
+    private String s;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +40,13 @@ public class Activity2 extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openMapActivity();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        s="m";
+                        popWork(s);
+                    }
+                });
             }
         });
 
@@ -45,7 +54,13 @@ public class Activity2 extends AppCompatActivity {
         resBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openResultsActivity();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        s="r";
+                        popWork(s);
+                    }
+                });
             }
         });
     }
@@ -58,5 +73,40 @@ public class Activity2 extends AppCompatActivity {
     public void openResultsActivity() {
         Intent intent = new Intent(this, ResultsActivity.class);
         startActivity(intent);
+    }
+
+    private void popWork(String s) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(Activity2.this);
+                builder.setTitle("To Work or to Home?");
+
+                String[] animals = {"To Work", "To Home"};
+                builder.setItems(animals, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                MainActivity.isWorking = true;
+                                break;
+                            case 1:
+                                MainActivity.isWorking = false;
+                                break;
+                        }
+                        if(MainActivity.isWorking != null) {
+                            if(s == "m") {
+                                openMapActivity();
+                            } else {
+                                openResultsActivity();
+                            }
+                        }
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
     }
 }

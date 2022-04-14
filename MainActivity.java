@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng p2;
     public static Boolean isWalking = false;
     public static int events= 0;
+    public static Boolean isWorking;
 
     @Override
     protected void onResume() {
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         for (int i = 0; i < list.size(); i++) {
 
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).build();
 
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // path to /data/data/com.example.myapplicationtestmapfrag/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         // Create imageDir
-        File mypath=new File(directory,getSessionDate()+".jpg");
+        File mypath=new File(directory,getSessionDate()+isWorking.toString()+".jpg");
 
         FileOutputStream fos = null;
         try {
