@@ -8,9 +8,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static Boolean isWalking = false;
     public static int events= 0;
     public static Boolean isWorking;
+    private String workerUrl;
 
     @Override
     protected void onResume() {
@@ -240,9 +243,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void cleardb() {
         OkHttpClient okHttpClient = new OkHttpClient();
         newSession = true;
-        RequestBody formbody = new FormBody.Builder().add("test", newSession.toString()).build();
+        RequestBody formbody = new FormBody.Builder().build();
 
-        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
+        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/delete/"+workerUrl+"/"+getSessionDate()).post(formbody).build();
+        Log.i("deletion", "https://albonoproj.herokuapp.com/delete/"+workerUrl+"/"+getSessionDate());
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -251,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Log.i("connectionFound", response.body().string());
+                Log.i("deletion", "deletion");
             }
         });
     }
@@ -280,14 +284,88 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return directory.getAbsolutePath();
     }
 
+    private void startService() {
+        Intent i = new Intent(getApplicationContext(), GPS_Service.class);
+        startService(i);
+    }
+
+    private void openHome() {
+        Intent intent = new Intent(this, Activity2.class);
+        startActivity(intent);
+    }
+
+    private void confirmOverwrite() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Journey exists. Confirm overwrite?");
+
+                String[] s = {"Yes", "No"};
+                builder.setItems(s, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                cleardb();
+                                startService();
+                                break;
+                            case 1:
+                                openHome();
+                                break;
+                        }
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+    }
+
+    private void checkIfDayExists() {
+        Log.i("existsCheck", "entered");
+        if(isWorking) {
+            workerUrl = "toWork";
+        } else {
+            workerUrl = "toHome";
+        }
+        OkHttpClient okHttpClient = new OkHttpClient();
+        RequestBody formbody = new FormBody.Builder().build();
+
+        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workerUrl+"/"+getSessionDate()).post(formbody).build();
+
+
+        okHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.i("existsCheck", "https://albonoproj.herokuapp.com/"+workerUrl+"/"+getSessionDate());
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                String s = response.body().string();
+
+                if (s.equals("error")) {
+                    Log.i("existsCheck", "match");
+                    startService();
+
+                } else {
+                    Log.i("existsCheck", "nope");
+                    confirmOverwrite();
+                }
+            }
+        });
+
+    }
+
     private void enable_buttons() {
 
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(), GPS_Service.class);
-                startService(i);
-                cleardb();
+                Log.i("existsCheck", "called");
+                checkIfDayExists();
             }
         });
 

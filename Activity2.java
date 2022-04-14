@@ -27,7 +27,7 @@ import okhttp3.Response;
 public class Activity2 extends AppCompatActivity {
 
     private Button button;
-    private MainActivity ma;
+//    private MainActivity ma;
     private Button resBtn;
     private String s;
 
@@ -35,7 +35,7 @@ public class Activity2 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_2);
-        MainActivity ma = new MainActivity();
+//        MainActivity ma = new MainActivity();
         button = (Button) findViewById(R.id.mapButton);
         button.setOnClickListener(new View.OnClickListener() {
             @Override

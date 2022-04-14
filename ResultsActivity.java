@@ -63,8 +63,8 @@ public class ResultsActivity extends AppCompatActivity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(ResultsActivity.this);
                 builder.setTitle("Choose a day");
 
-                String[] animals = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-                builder.setItems(animals, new DialogInterface.OnClickListener() {
+                String[] s = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+                builder.setItems(s, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
