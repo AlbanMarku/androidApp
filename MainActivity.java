@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public LatLng lt;
     private LocationListener locationListener;
     private LocationManager location;
-    private Boolean newSession;
     private PolylineOptions op;
     private int cl;
     private LatLng p2;
@@ -191,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void pushToDatabase() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        newSession = false;
 
         Location st = new Location("a");
         Location dt = new Location("b");
@@ -205,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         for (int i = 0; i < list.size(); i++) {
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).build();
 
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
@@ -292,7 +290,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void cleardb() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        newSession = true;
         RequestBody formbody = new FormBody.Builder().build();
 
         Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/delete/"+workerUrl+"/"+getSessionDate()).post(formbody).build();
@@ -448,7 +445,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         stopService(i);
         pushToDatabase();
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 10));
-        newSession = true; // sussy
         //goToUrl("https://albonoproj.herokuapp.com");
 
         final Handler handler = new Handler(Looper.getMainLooper());
