@@ -91,12 +91,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int cl;
     private LatLng p2;
     public static Boolean isWalking = true;
-    public static int events= 4;//Set to zero for real life use.
+    public static int events= 0;//Set to zero for real life use.
     public static Boolean isWorking;
     private String workerUrl;
     private Integer startInt;
     private Integer endInt;
     private String m_Text = "";
+    private String m1,m2;
+    private String starterPoiLat;
+    private String getStarterPoiLon;
+    private double totalDistance;
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -105,8 +110,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     textView.append("\n" + intent.getExtras().get("coords"));
-                    String m1 = intent.getExtras().get("coords").toString();
-                    String m2 = intent.getExtras().get("coords2").toString();
+                    m1 = intent.getExtras().get("coords").toString();
+                    m2 = intent.getExtras().get("coords2").toString();
                     Integer iEvent = Integer.parseInt(intent.getExtras().get("intValue").toString());
                     Log.i("iEvent", iEvent.toString() + "YOOOOOOOO");
                     Float f = Float.parseFloat(m1);
@@ -116,7 +121,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     walkList.add(isWalking.toString());
                     Log.i("list", list.toString());
                     getSessionDate();
-                    if (list.size() <= 1) {
+                    if (list.size() == 1) {
+                        starterPoiLat = m1;
+                        getStarterPoiLon = m2;
                         LatLng sp = lt;
                         marker = mMap.addMarker(new MarkerOptions().position(sp).draggable(true));
                     }
@@ -188,8 +195,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         OkHttpClient okHttpClient = new OkHttpClient();
         newSession = false;
 
+        Location st = new Location("a");
+        Location dt = new Location("b");
+        st.setLatitude(Double.parseDouble(starterPoiLat));
+        st.setLongitude(Double.parseDouble(getStarterPoiLon));
+
+        dt.setLatitude(Double.parseDouble(m1));
+        dt.setLongitude(Double.parseDouble(m2));
+
+        totalDistance = st.distanceTo(dt);
+
+
         for (int i = 0; i < list.size(); i++) {
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).build();
 
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
