@@ -29,10 +29,12 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -88,11 +90,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PolylineOptions op;
     private int cl;
     private LatLng p2;
-    public static Boolean isWalking = false;
-    public static int events= 0;
+    public static Boolean isWalking = true;
+    public static int events= 4;//Set to zero for real life use.
     public static Boolean isWorking;
     private String workerUrl;
-
+    private Integer startInt;
+    private Integer endInt;
+    private String m_Text = "";
     @Override
     protected void onResume() {
         super.onResume();
@@ -151,13 +155,41 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         registerReceiver(broadcastReceiver, new IntentFilter("location update"));
     }
 
+    private void askForStartBat() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Input car battery level");
+
+// Set up the input
+        final EditText input = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+                startInt = Integer.parseInt(m_Text);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startInt = 0;
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
     private void pushToDatabase() {
         OkHttpClient okHttpClient = new OkHttpClient();
         newSession = false;
 
         for (int i = 0; i < list.size(); i++) {
-
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("test", newSession.toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).build();
 
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
@@ -229,6 +261,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         iv = (ImageView) findViewById(R.id.imageViewBity);
         list = new ArrayList<>();
         walkList = new ArrayList<>();
+
+        sw.setChecked(true);
 
         if (!runtime_permissions()) {
             enable_buttons();
@@ -372,29 +406,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(), GPS_Service.class);
-                stopService(i);
-                pushToDatabase();
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 10));
-                newSession = true; // sussy
-                //goToUrl("https://albonoproj.herokuapp.com");
-
-                final Handler handler = new Handler(Looper.getMainLooper());
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //Do something after delay
-                        mMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
-                            @Override
-                            public void onSnapshotReady(@Nullable Bitmap bitmap) {
-                                Bitmap bt = bitmap;
-                                saveToInternalStorage(bt);
-                                iv.setImageBitmap(bt);
-                                //loadImageFromStorage("/data/data/com.example.myapplicationtestmapfrag/app_imageDir");
-                            }
-                        });
-                    }
-                }, 3000);
+                askStopBat();
 
             }
         });
@@ -406,12 +418,68 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     isWalking = true;
                 } else {
                     isWalking = false;
+                    askForStartBat();
                 }
             }
         });
 
     }
 
+    private void closeProcess() {
+        Intent i = new Intent(getApplicationContext(), GPS_Service.class);
+        stopService(i);
+        pushToDatabase();
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 10));
+        newSession = true; // sussy
+        //goToUrl("https://albonoproj.herokuapp.com");
+
+        final Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after delay
+                mMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                    @Override
+                    public void onSnapshotReady(@Nullable Bitmap bitmap) {
+                        Bitmap bt = bitmap;
+                        saveToInternalStorage(bt);
+                        iv.setImageBitmap(bt);
+                        //loadImageFromStorage("/data/data/com.example.myapplicationtestmapfrag/app_imageDir");
+                    }
+                });
+            }
+        }, 3000);
+    }
+
+    private void askStopBat() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Input car battery level");
+
+// Set up the input
+        final EditText input = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+                endInt = Integer.parseInt(m_Text);
+                closeProcess();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                endInt = 0;
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
     private void goToUrl(String s) {
         Uri url = Uri.parse(s);
         startActivity(new Intent(Intent.ACTION_VIEW, url));
