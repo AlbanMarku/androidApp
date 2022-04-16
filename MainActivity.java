@@ -122,8 +122,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.i("list", list.toString());
                     getSessionDate();
                     if (list.size() == 1) {
-                        starterPoiLat = m1;
-                        getStarterPoiLon = m2;
                         LatLng sp = lt;
                         marker = mMap.addMarker(new MarkerOptions().position(sp).draggable(true));
                     }
@@ -436,6 +434,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     isWalking = true;
                 } else {
                     isWalking = false;
+                    starterPoiLat = m1;
+                    getStarterPoiLon = m2;
                     askForStartBat();
                 }
             }
