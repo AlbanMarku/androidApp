@@ -110,6 +110,7 @@ public class ResultsActivity extends AppCompatActivity {
 
     private void displayResults() {
 
+        btn.setEnabled(false);
 
         OkHttpClient okHttpClient = new OkHttpClient();
         Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+dayVal).build();

@@ -189,6 +189,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void pushToDatabase() {
+        if(startInt == null || endInt == null) {
+            startInt = 100;
+            endInt = 100;
+        }
         OkHttpClient okHttpClient = new OkHttpClient();
 
         Location st = new Location("a");
@@ -355,6 +359,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         switch (which) {
                             case 0:
                                 cleardb();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        btnStart.setEnabled(false);
+                                    }
+                                });
+
                                 startService();
                                 break;
                             case 1:
@@ -395,6 +406,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if (s.equals("error")) {
                     Log.i("existsCheck", "match");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            btnStart.setEnabled(false);
+                        }
+                    });
+
                     startService();
 
                 } else {
@@ -420,6 +438,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 askStopBat();
+                btnStop.setEnabled(false);
 
             }
         });
@@ -457,7 +476,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onSnapshotReady(@Nullable Bitmap bitmap) {
                         Bitmap bt = bitmap;
                         saveToInternalStorage(bt);
-                        iv.setImageBitmap(bt);
+//                        iv.setImageBitmap(bt);
                         //loadImageFromStorage("/data/data/com.example.myapplicationtestmapfrag/app_imageDir");
                     }
                 });
@@ -501,8 +520,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private boolean runtime_permissions() {
-        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 100);
+        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
+
+            }, 100);
+
             return true;
         }
         return false;
