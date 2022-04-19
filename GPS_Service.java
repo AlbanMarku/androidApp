@@ -67,6 +67,11 @@ public class GPS_Service extends Service {
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
             }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
         };
         location = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         location.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 5, listener); //set min distance proper units

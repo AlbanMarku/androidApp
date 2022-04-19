@@ -113,7 +113,9 @@ public class ResultsActivity extends AppCompatActivity {
         btn.setEnabled(false);
 
         OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+dayVal).build();
+        RequestBody formbody = new FormBody.Builder().add("name", Activity2.logStr).build();
+        Log.i("loginStr",Activity2.TEXT + "SENDING THIS NAME TO DB");
+        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+dayVal).post(formbody).build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -144,7 +146,7 @@ public class ResultsActivity extends AppCompatActivity {
 
                 // Stuff that updates the UI
                 try {
-                    File f=new File(path, dayVal+MainActivity.isWorking.toString()+".jpg");
+                    File f=new File(path, dayVal+MainActivity.isWorking.toString()+Activity2.logStr+".jpg");
                     Log.i("wheretho", "IIIIIN");
                     Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
                     iv.setImageBitmap(b);

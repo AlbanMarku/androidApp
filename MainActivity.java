@@ -207,8 +207,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         for (int i = 0; i < list.size(); i++) {
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).build();
-
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).add("nameVal", Activity2.logStr).build();
+            Log.i("pushtodb",Activity2.TEXT+ " BRUH MAN IS PUSHING THIS TO FAT DB");
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void cleardb() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        RequestBody formbody = new FormBody.Builder().build();
+        RequestBody formbody = new FormBody.Builder().add("name",Activity2.logStr).build();
 
         Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/delete/"+workerUrl+"/"+getSessionDate()).post(formbody).build();
         Log.i("deletion", "https://albonoproj.herokuapp.com/delete/"+workerUrl+"/"+getSessionDate());
@@ -316,7 +316,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // path to /data/data/com.example.myapplicationtestmapfrag/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         // Create imageDir
-        File mypath=new File(directory,getSessionDate()+isWorking.toString()+".jpg");
+
+        File mypath=new File(directory,getSessionDate()+isWorking.toString()+Activity2.logStr+".jpg");
 
         FileOutputStream fos = null;
         try {
@@ -389,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             workerUrl = "toHome";
         }
         OkHttpClient okHttpClient = new OkHttpClient();
-        RequestBody formbody = new FormBody.Builder().build();
+        RequestBody formbody = new FormBody.Builder().add("name",Activity2.logStr).build();
 
         Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workerUrl+"/"+getSessionDate()).post(formbody).build();
 
