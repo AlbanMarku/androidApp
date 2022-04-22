@@ -43,6 +43,7 @@ public class Activity2 extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle("Electric Journey Companion");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_2);
         txtView = (TextView) findViewById(R.id.textViewLogin);

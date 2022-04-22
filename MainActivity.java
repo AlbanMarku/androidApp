@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String starterPoiLat;
     private String getStarterPoiLon;
     private double totalDistance;
+    private Integer overStr = 0;
 
     @Override
     protected void onResume() {
@@ -108,17 +109,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             broadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    textView.append("\n" + intent.getExtras().get("coords"));
                     m1 = intent.getExtras().get("coords").toString();
                     m2 = intent.getExtras().get("coords2").toString();
                     Integer iEvent = Integer.parseInt(intent.getExtras().get("intValue").toString());
-                    Log.i("iEvent", iEvent.toString() + "YOOOOOOOO");
                     Float f = Float.parseFloat(m1);
                     Float f2 = Float.parseFloat(m2);
                     lt = new LatLng(f, f2);
                     list.add(lt);
                     walkList.add(isWalking.toString());
-                    Log.i("list", list.toString());
                     getSessionDate();
                     if (list.size() == 1) {
                         LatLng sp = lt;
@@ -126,12 +124,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     switch (iEvent) {
                         case 2:
-                            Log.i("bigger", "THAT WAS BIG GAS");
                             cl = context.getResources().getColor(R.color.teal_200);
                             events++;
                             break;
                         case 1:
-                            Log.i("bigger", "THAT WAS BIG BREAK");
                             cl = context.getResources().getColor(R.color.red);
                             events++;
                             break;
@@ -139,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             cl = context.getResources().getColor(R.color.purple_500);
                             break;
                         case 0:
-                            Log.i("bigger", "SMOOTH AF");
                             cl = context.getResources().getColor(R.color.black);
                             break;
                     }
@@ -152,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     op = new PolylineOptions().add(p1).add(p2);
                     Polyline polyline = mMap.addPolyline(op);
                     polyline.setColor(cl);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 15));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 12));
                 }
             };
         }
@@ -272,9 +267,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        setTitle("Electric Journey Companion");
         btnStart = (Button) findViewById(R.id.startButton);
         btnStop = (Button) findViewById(R.id.stopButton);
-        textView = (TextView) findViewById(R.id.coordsText);
         sw = (Switch) findViewById(R.id.walkSwitch);
         iv = (ImageView) findViewById(R.id.imageViewBity);
         list = new ArrayList<>();
@@ -382,8 +377,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void checkIfDayExists() {
-        Log.i("existsCheck", "entered");
+    private void checkIfDayExists(Integer i) {
         if(isWorking) {
             workerUrl = "toWork";
         } else {
@@ -431,7 +425,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Log.i("existsCheck", "called");
-                checkIfDayExists();
+                checkIfDayExists(overStr);
             }
         });
 
@@ -464,8 +458,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent i = new Intent(getApplicationContext(), GPS_Service.class);
         stopService(i);
         pushToDatabase();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lt, 10));
-        //goToUrl("https://albonoproj.herokuapp.com");
+        Integer listInt = list.size()/2;
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(list.get(listInt), 12));
 
         final Handler handler = new Handler(Looper.getMainLooper());
         handler.postDelayed(new Runnable() {
@@ -477,8 +471,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onSnapshotReady(@Nullable Bitmap bitmap) {
                         Bitmap bt = bitmap;
                         saveToInternalStorage(bt);
-//                        iv.setImageBitmap(bt);
-                        //loadImageFromStorage("/data/data/com.example.myapplicationtestmapfrag/app_imageDir");
                     }
                 });
             }
@@ -513,11 +505,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         builder.show();
-    }
-    private void goToUrl(String s) {
-        Uri url = Uri.parse(s);
-        startActivity(new Intent(Intent.ACTION_VIEW, url));
-
     }
 
     private boolean runtime_permissions() {

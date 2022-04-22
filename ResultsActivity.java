@@ -43,6 +43,7 @@ public class ResultsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_results2);
 
+        setTitle("Electric Journey Companion");
         txt = (TextView) findViewById(R.id.txtRes);
         btn = (Button) findViewById(R.id.dayBtn);
         iv  = (ImageView) findViewById(R.id.imageViewMap);
@@ -105,7 +106,6 @@ public class ResultsActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
-
     }
 
     private void displayResults() {
@@ -114,7 +114,6 @@ public class ResultsActivity extends AppCompatActivity {
 
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody formbody = new FormBody.Builder().add("name", Activity2.logStr).build();
-        Log.i("loginStr",Activity2.TEXT + "SENDING THIS NAME TO DB");
         Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+dayVal).post(formbody).build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override

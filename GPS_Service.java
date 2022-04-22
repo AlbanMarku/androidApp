@@ -30,7 +30,6 @@ public class GPS_Service extends Service {
     private Float mphFl = 0f;
     private Float prevMphFl = 0f;
     public Integer eventInt;
-    private MainActivity ma;
 
 
     @Nullable
@@ -48,17 +47,12 @@ public class GPS_Service extends Service {
                 speedFl = location.getSpeed();
                 prevMphFl = mphFl;
                 mphFl = speedFl * 2.2369f;
-                Log.i("speed", mphFl.toString() + " mph");
-                Log.i("speedDifference", "PREV  " + prevMphFl.toString() + "  " + "NOW  " + mphFl.toString());
-                // if (prevMphFl != 0f) { // Test if this is good condition to stop init big  gas
                 compareSpeed();
-                // }
                 Intent i = new Intent("location update");
                 i.putExtra("coords", location.getLatitude());
                 i.putExtra("coords2", location.getLongitude());
                 i.putExtra("intValue", eventInt);
                 sendBroadcast(i);
-
             }
 
             @Override
