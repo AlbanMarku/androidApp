@@ -36,6 +36,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -55,7 +56,8 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
     private String workUrl;
     private String m_Text;
     private Integer mInt;
-
+    private String curDatStr;
+    private String prevDatStr;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,11 +67,16 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
         txt = (TextView) findViewById(R.id.txtRes);
         btn = (Button) findViewById(R.id.dayBtn);
         iv = (ImageView) findViewById(R.id.imageViewMap);
+        if(MainActivity.isWorking == true) {
+            workUrl = "toWork";
+        } else {
+            workUrl = "toHome";
+        }
+
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //popUp();
                 DialogFragment dp = new DatePickerFragment();
                 dp.show(getSupportFragmentManager(),"date picker");
             }
@@ -83,108 +90,23 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
         c.set(Calendar.YEAR, i);
         c.set(Calendar.MONTH, i1);
         c.set(Calendar.DAY_OF_MONTH,i2);
-        String curDatStr = DateFormat.getDateInstance().format(c.getTime());
+        curDatStr = DateFormat.getDateInstance().format(c.getTime());
         curDatStr = curDatStr.replace(" ","");
         curDatStr = curDatStr.replace(",","");
-        dayVal = curDatStr;
-        Log.i("datestr",dayVal);
-        if(MainActivity.isWorking == true) {
-            workUrl = "toWork";
-        } else {
-            workUrl = "toHome";
-        }
-        displayResults();
+        Log.i("datestr","cur date is" + curDatStr);
+        displayResults(curDatStr);
     }
 
-//    private void askForSessionsNumber() {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setTitle("Day");
-//
-//// Set up the input
-//        final EditText input = new EditText(this);
-//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-//        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-//        builder.setView(input);
-//
-//// Set up the buttons
-//        builder.setPositiveButton("Set", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                m_Text = input.getText().toString();
-//                mInt = Integer.parseInt(m_Text);
-//                displayResults();
-//            }
-//        });
-//        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                dialog.cancel();
-//            }
-//        });
-//
-//        builder.show();
-//    }
-// The method that displays the popup.
 
+    private void displayResults(String s) {
 
-    private void popUp() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(ResultsActivity.this);
-                builder.setTitle("Choose a day");
-
-                String[] s = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-                builder.setItems(s, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case 0:
-                                dayVal = "monday";
-                                break;
-                            case 1:
-                                dayVal = "tuesday";
-                                break;
-                            case 2:
-                                dayVal = "wednesday";
-                                break;
-                            case 3:
-                                dayVal = "thursday";
-                                break;
-                            case 4:
-                                dayVal = "friday";
-                                break;
-                            case 5:
-                                dayVal = "saturday";
-                                break;
-                            case 6:
-                                dayVal = "sunday";
-                                break;
-                        }
-                        if(dayVal != null) {
-                            if(MainActivity.isWorking == true) {
-                                workUrl = "toWork";
-                            } else {
-                                workUrl = "toHome";
-                            }
-                            //askForSessionsNumber();
-                        }
-                    }
-                });
-
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            }
-        });
-    }
-
-    private void displayResults() {
+        dayVal = s;
 
         btn.setEnabled(false);
 
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody formbody = new FormBody.Builder().add("name", Activity2.logStr).build();
-        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+dayVal).post(formbody).build();
+        Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+s).post(formbody).build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {

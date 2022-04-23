@@ -60,6 +60,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -200,12 +201,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         dt.setLatitude(Double.parseDouble(m1));
         dt.setLongitude(Double.parseDouble(m2));
+        DecimalFormat df = new DecimalFormat("0.00");
 
         totalDistance = st.distanceTo(dt);
 
+        df.format(totalDistance);
+
 
         for (int i = 0; i < list.size(); i++) {
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", (getSessionDate())).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).add("nameVal", Activity2.logStr).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).add("nameVal", Activity2.logStr).build();
             Log.i("pushtodb",Activity2.TEXT+ " BRUH MAN IS PUSHING THIS TO FAT DB");
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
@@ -225,8 +229,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String getSessionDate() {
 
         Calendar calendar = Calendar.getInstance();
-        //int day = calendar.get(Calendar.DAY_OF_WEEK);
-
         String curDatStr = DateFormat.getDateInstance().format(calendar.getTime());
         curDatStr = curDatStr.replace(" ","");
         curDatStr = curDatStr.replace(",","");
