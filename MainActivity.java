@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -34,6 +35,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -183,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         builder.show();
     }
 
+
     private void pushToDatabase() {
         if(startInt == null || endInt == null) {
             startInt = 100;
@@ -202,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         for (int i = 0; i < list.size(); i++) {
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).add("nameVal", Activity2.logStr).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", (getSessionDate())).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).add("nameVal", Activity2.logStr).build();
             Log.i("pushtodb",Activity2.TEXT+ " BRUH MAN IS PUSHING THIS TO FAT DB");
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
@@ -222,36 +225,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String getSessionDate() {
 
         Calendar calendar = Calendar.getInstance();
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        //int day = calendar.get(Calendar.DAY_OF_WEEK);
 
-        switch (day) {
-            case Calendar.SUNDAY:
-                return "sunday";
-
-            case Calendar.MONDAY:
-                return "monday";
-
-
-            case Calendar.TUESDAY:
-                return "tuesday";
-
-
-            case Calendar.WEDNESDAY:
-                return "wednesday";
-
-            case Calendar.THURSDAY:
-                return "thursday";
-
-
-            case Calendar.FRIDAY:
-                return "friday";
-
-
-            case Calendar.SATURDAY:
-                return "saturday";
-
-        }
-        return "Unknown Date";
+        String curDatStr = DateFormat.getDateInstance().format(calendar.getTime());
+        curDatStr = curDatStr.replace(" ","");
+        curDatStr = curDatStr.replace(",","");
+        Log.i("datestr", curDatStr);
+        return curDatStr;
     }
 
     @Override
@@ -276,6 +256,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         walkList = new ArrayList<>();
 
         sw.setChecked(true);
+        getSessionDate();
 
         if (!runtime_permissions()) {
             enable_buttons();
@@ -348,6 +329,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Journey exists. Confirm overwrite?");
 
+
                 String[] s = {"Yes", "No"};
                 builder.setItems(s, new DialogInterface.OnClickListener() {
                     @Override
@@ -377,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void checkIfDayExists(Integer i) {
+    private void checkIfDayExists() {
         if(isWorking) {
             workerUrl = "toWork";
         } else {
@@ -425,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Log.i("existsCheck", "called");
-                checkIfDayExists(overStr);
+                checkIfDayExists();
             }
         });
 

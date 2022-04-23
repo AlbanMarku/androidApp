@@ -2,16 +2,30 @@ package com.example.myapplicationtestmapfrag;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CalendarView;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -20,6 +34,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Calendar;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -30,13 +46,15 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class ResultsActivity extends AppCompatActivity {
+public class ResultsActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
     private TextView txt;
     private Button btn;
     private ImageView iv;
     private String dayVal;
     private String workUrl;
+    private String m_Text;
+    private Integer mInt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,16 +64,68 @@ public class ResultsActivity extends AppCompatActivity {
         setTitle("Electric Journey Companion");
         txt = (TextView) findViewById(R.id.txtRes);
         btn = (Button) findViewById(R.id.dayBtn);
-        iv  = (ImageView) findViewById(R.id.imageViewMap);
+        iv = (ImageView) findViewById(R.id.imageViewMap);
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                popUp();
+                //popUp();
+                DialogFragment dp = new DatePickerFragment();
+                dp.show(getSupportFragmentManager(),"date picker");
             }
         });
 
     }
+
+    @Override
+    public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, i);
+        c.set(Calendar.MONTH, i1);
+        c.set(Calendar.DAY_OF_MONTH,i2);
+        String curDatStr = DateFormat.getDateInstance().format(c.getTime());
+        curDatStr = curDatStr.replace(" ","");
+        curDatStr = curDatStr.replace(",","");
+        dayVal = curDatStr;
+        Log.i("datestr",dayVal);
+        if(MainActivity.isWorking == true) {
+            workUrl = "toWork";
+        } else {
+            workUrl = "toHome";
+        }
+        displayResults();
+    }
+
+//    private void askForSessionsNumber() {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setTitle("Day");
+//
+//// Set up the input
+//        final EditText input = new EditText(this);
+//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+//        builder.setView(input);
+//
+//// Set up the buttons
+//        builder.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                m_Text = input.getText().toString();
+//                mInt = Integer.parseInt(m_Text);
+//                displayResults();
+//            }
+//        });
+//        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.cancel();
+//            }
+//        });
+//
+//        builder.show();
+//    }
+// The method that displays the popup.
+
 
     private void popUp() {
         runOnUiThread(new Runnable() {
@@ -97,7 +167,7 @@ public class ResultsActivity extends AppCompatActivity {
                             } else {
                                 workUrl = "toHome";
                             }
-                            displayResults();
+                            //askForSessionsNumber();
                         }
                     }
                 });
