@@ -102,8 +102,6 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
 
         dayVal = s;
 
-        btn.setEnabled(false);
-
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody formbody = new FormBody.Builder().add("name", Activity2.logStr).build();
         Request request = new Request.Builder().url("https://albonoproj.herokuapp.com/"+workUrl+"/"+s).post(formbody).build();

@@ -58,6 +58,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -202,15 +203,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         dt.setLatitude(Double.parseDouble(m1));
         dt.setLongitude(Double.parseDouble(m2));
-        DecimalFormat df = new DecimalFormat("0.00");
 
         totalDistance = st.distanceTo(dt);
 
-        df.format(totalDistance);
+        BigDecimal roundfinalPrice = new BigDecimal(totalDistance).setScale(2,BigDecimal.ROUND_HALF_UP);
 
 
         for (int i = 0; i < list.size(); i++) {
-            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", String.valueOf(totalDistance)).add("nameVal", Activity2.logStr).build();
+            RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", roundfinalPrice.toString()).add("nameVal", Activity2.logStr).build();
             Log.i("pushtodb",Activity2.TEXT+ " BRUH MAN IS PUSHING THIS TO FAT DB");
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
@@ -385,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 String s = response.body().string();
 
-                if (s.equals("error")) {
+                if (s.equals("No_Results_For_Date")) {
                     Log.i("existsCheck", "match");
                     runOnUiThread(new Runnable() {
                         @Override
