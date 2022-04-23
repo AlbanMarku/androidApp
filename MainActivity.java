@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (list.size() == 1) {
                         LatLng sp = lt;
                         marker = mMap.addMarker(new MarkerOptions().position(sp).draggable(true));
+                        sw.setEnabled(true);
                     }
                     switch (iEvent) {
                         case 2:
@@ -258,6 +259,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         walkList = new ArrayList<>();
 
         sw.setChecked(true);
+        sw.setEnabled(false);
         getSessionDate();
 
         if (!runtime_permissions()) {
@@ -484,6 +486,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 endInt = 0;
+                closeProcess();
                 dialog.cancel();
             }
         });
