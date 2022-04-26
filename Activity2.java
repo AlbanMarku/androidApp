@@ -53,8 +53,6 @@ public class Activity2 extends AppCompatActivity {
         Log.i("loginStr","LOADING NAMES");
         Log.i("loginStr",TEXT + "I got this back from last time");
 
-        loginPop();
-
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,8 +72,13 @@ public class Activity2 extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        s="m";
-                        popWork(s);
+                        if(logStr == null) {
+                            loginPop();
+                        } else {
+                            s="m";
+                            popWork(s);
+                        }
+
                     }
                 });
             }
@@ -88,8 +91,12 @@ public class Activity2 extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        s="r";
-                        popWork(s);
+                        if (logStr == null) {
+                            loginPop();
+                        } else {
+                            s="r";
+                            popWork(s);
+                        }
                     }
                 });
             }
@@ -139,7 +146,7 @@ public class Activity2 extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    txtView.setText("ACCOUNT CREATED. TRAVEL DATA WILL BE SAVED UNDER YOUR NAME" + logStr);
+                                    txtView.setText("ACCOUNT CREATED. WELCOME " + logStr);
                                 }
                             });
 
@@ -178,8 +185,8 @@ public class Activity2 extends AppCompatActivity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(Activity2.this);
                 builder.setTitle("To Work or to Home?");
 
-                String[] animals = {"To Work", "To Home"};
-                builder.setItems(animals, new DialogInterface.OnClickListener() {
+                String[] options = {"To Work", "To Home"};
+                builder.setItems(options, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {

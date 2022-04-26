@@ -17,6 +17,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -104,7 +105,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String starterPoiLat;
     private String getStarterPoiLon;
     private double totalDistance;
-    private Integer overStr = 0;
+    private Boolean connection = false;
+    private TextView warnText;
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // TODO Auto-generated method stub
+        super.onConfigurationChanged(newConfig);
+    }
 
     @Override
     protected void onResume() {
@@ -113,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             broadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
+                    connection = true;
+                    btnStop.setEnabled(true);
                     m1 = intent.getExtras().get("coords").toString();
                     m2 = intent.getExtras().get("coords2").toString();
                     Integer iEvent = Integer.parseInt(intent.getExtras().get("intValue").toString());
@@ -211,12 +221,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         for (int i = 0; i < list.size(); i++) {
             RequestBody formbody = new FormBody.Builder().add("value", list.get(i).toString()).add("timeVal", getSessionDate()).add("walkVal", walkList.get(i)).add("workVal", isWorking.toString()).add("eventVal", String.valueOf(events)).add("startVal", startInt.toString()).add("endVal",endInt.toString()).add("disVal", roundfinalPrice.toString()).add("nameVal", Activity2.logStr).build();
-            Log.i("pushtodb",Activity2.TEXT+ " BRUH MAN IS PUSHING THIS TO FAT DB");
             Request request = new Request.Builder().url("https://albonoproj.herokuapp.com").post(formbody).build();
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     Log.i("error", "I didn't find anything");
+                    tryAgain();
                 }
 
                 @Override
@@ -225,6 +235,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }
+    }
+
+    private void tryAgain() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Could not push journey online. Try again?");
+
+                String[] options = {"Yes", "No"};
+                builder.setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                pushToDatabase();
+                                break;
+                            case 1:
+                                openHome();
+                                break;
+                        }
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
     }
 
     private String getSessionDate() {
@@ -254,12 +292,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnStart = (Button) findViewById(R.id.startButton);
         btnStop = (Button) findViewById(R.id.stopButton);
         sw = (Switch) findViewById(R.id.walkSwitch);
-        iv = (ImageView) findViewById(R.id.imageViewBity);
+        warnText = (TextView) findViewById(R.id.warningText);
         list = new ArrayList<>();
         walkList = new ArrayList<>();
 
         sw.setChecked(true);
         sw.setEnabled(false);
+        btnStop.setEnabled(false);
         getSessionDate();
 
         if (!runtime_permissions()) {
@@ -282,6 +321,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.i("error", "I didn't find anything");
+                Toast.makeText(MainActivity.this,"Error connecting to server",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -295,14 +335,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         // path to /data/data/com.example.myapplicationtestmapfrag/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        // Create imageDir
-
         File mypath=new File(directory,getSessionDate()+isWorking.toString()+Activity2.logStr+".jpg");
 
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
         } catch (Exception e) {
             e.printStackTrace();
@@ -319,6 +356,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void startService() {
         Intent i = new Intent(getApplicationContext(), GPS_Service.class);
         startService(i);
+        final Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (connection == false) {
+                    Log.i("contactcheck", "No connection");
+                    warnText.setText("No connection? Try starting the journey again outdoors or when gps is stronger.");
+                }
+            }
+        }, 5000);
     }
 
     private void openHome() {
@@ -378,7 +425,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.i("existsCheck", "https://albonoproj.herokuapp.com/"+workerUrl+"/"+getSessionDate());
+                Log.i("existsCheck", "No connection");
+                Toast.makeText(MainActivity.this,"Error connecting to server",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -395,7 +443,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     });
 
                     startService();
-
                 } else {
                     Log.i("existsCheck", "nope");
                     confirmOverwrite();
@@ -411,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Log.i("existsCheck", "called");
+                connection = false;
                 checkIfDayExists();
             }
         });

@@ -93,7 +93,6 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
         curDatStr = DateFormat.getDateInstance().format(c.getTime());
         curDatStr = curDatStr.replace(" ","");
         curDatStr = curDatStr.replace(",","");
-        Log.i("datestr","cur date is" + curDatStr);
         displayResults(curDatStr);
     }
 
