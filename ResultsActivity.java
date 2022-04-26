@@ -4,44 +4,25 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.provider.CalendarContract;
-import android.text.InputType;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.TextView;
-
-import com.google.android.gms.maps.model.LatLng;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Calendar;
-import java.util.Date;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -54,10 +35,7 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
     private ImageView iv;
     private String dayVal;
     private String workUrl;
-    private String m_Text;
-    private Integer mInt;
     private String curDatStr;
-    private String prevDatStr;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +62,7 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
 
     }
 
-    @Override
+    @Override//Sets date based on calander pop up.
     public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.YEAR, i);
@@ -97,7 +75,7 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
     }
 
 
-    private void displayResults(String s) {
+    private void displayResults(String s) {//calls url to fetch results for given date and fetches image from storage.
 
         dayVal = s;
 
@@ -125,7 +103,7 @@ public class ResultsActivity extends AppCompatActivity implements DatePickerDial
         });
     }
 
-    private void loadImageFromStorage(String path)
+    private void loadImageFromStorage(String path)//searches storage for journey.
     {
         runOnUiThread(new Runnable() {
 

@@ -1,7 +1,5 @@
 package com.example.myapplicationtestmapfrag;
 
-import static android.content.ContentValues.TAG;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,7 +7,6 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -19,16 +16,9 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
@@ -36,9 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,27 +38,20 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -79,18 +60,13 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private Button btnStart, btnStop;
-    private TextView textView;
     private Switch sw;
-    private ImageView iv;
     private BroadcastReceiver broadcastReceiver;
     private GoogleMap mMap;
     private Marker marker;
     public ArrayList<LatLng> list;
     public ArrayList<String> walkList;
-    private PolylineOptions polylineOptions;
     public LatLng lt;
-    private LocationListener locationListener;
-    private LocationManager location;
     private PolylineOptions op;
     private int cl;
     private LatLng p2;
@@ -110,11 +86,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        // TODO Auto-generated method stub
         super.onConfigurationChanged(newConfig);
     }
 
-    @Override
+    @Override //on Resume called when gps service broadcasts data to this class. Method deals with adding coords to a list, storing events and drawing on the map.
     protected void onResume() {
         super.onResume();
         if (broadcastReceiver == null) {
@@ -168,18 +143,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         registerReceiver(broadcastReceiver, new IntentFilter("location update"));
     }
-
+    //Gets start battery
     private void askForStartBat() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Input car battery level");
 
-// Set up the input
         final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
-// Set up the buttons
         builder.setPositiveButton("Set", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -198,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         builder.show();
     }
 
-
+    //Called whe journey is over. Pushes all data to specified url with data attached.
     private void pushToDatabase() {
         if(startInt == null || endInt == null) {
             startInt = 100;
@@ -236,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
         }
     }
-
+    //Called when url for pushing data does not return a response.
     private void tryAgain() {
         runOnUiThread(new Runnable() {
             @Override
@@ -264,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-
+    //Fetches date.
     private String getSessionDate() {
 
         Calendar calendar = Calendar.getInstance();
@@ -310,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     }
-
+    //Called when user wants to overwirte existing journey. Url deletes related data.
     public void cleardb() {
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody formbody = new FormBody.Builder().add("name",Activity2.logStr).build();
@@ -330,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-
+    //saves a bitmap of the journey with a specific file name
     private String saveToInternalStorage(Bitmap bitmapImage){
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         // path to /data/data/com.example.myapplicationtestmapfrag/app_data/imageDir
@@ -352,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return directory.getAbsolutePath();
     }
-
+    //Starts the gps service class. If no response is made then text will notify to try again.
     private void startService() {
         Intent i = new Intent(getApplicationContext(), GPS_Service.class);
         startService(i);
@@ -372,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent intent = new Intent(this, Activity2.class);
         startActivity(intent);
     }
-
+    //Prompts user if they want to overwrite the data.
     private void confirmOverwrite() {
         runOnUiThread(new Runnable() {
             @Override
@@ -409,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-
+    //Checks if journey already exists by calling url to make a query.
     private void checkIfDayExists() {
         if(isWorking) {
             workerUrl = "toWork";
@@ -487,7 +459,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
     }
-
+    //When stop button is pressed, gps stops, data is pushed, picture is saved.
     private void closeProcess() {
         Intent i = new Intent(getApplicationContext(), GPS_Service.class);
         stopService(i);
@@ -499,7 +471,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                //Do something after delay
                 mMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
                     @Override
                     public void onSnapshotReady(@Nullable Bitmap bitmap) {
@@ -510,18 +481,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }, 3000);
     }
-
+    //Prompts remaining battery input.
     private void askStopBat() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Input car battery level");
 
-// Set up the input
         final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
-// Set up the buttons
         builder.setPositiveButton("Set", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -541,7 +509,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         builder.show();
     }
-
+    //checks gps and storage permissions.
     private boolean runtime_permissions() {
         if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE

@@ -1,26 +1,16 @@
 package com.example.myapplicationtestmapfrag;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-
-import com.google.android.gms.maps.model.LatLng;
-
-import java.security.Provider;
 
 public class GPS_Service extends Service {
 
@@ -40,7 +30,7 @@ public class GPS_Service extends Service {
 
     @SuppressLint("MissingPermission")
     @Override
-    public void onCreate() {
+    public void onCreate() { // When gps service starts, location listener is created tracking the device. When location updates, speed is calculated and coords are sent to main activit.
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -55,7 +45,7 @@ public class GPS_Service extends Service {
                 sendBroadcast(i);
             }
 
-            @Override
+            @Override//opens gps settings if disabled.
             public void onProviderDisabled(String s) {
                 Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -67,25 +57,22 @@ public class GPS_Service extends Service {
 
             }
         };
+        //Location is checked when a min distance of 5 meters in 3 seconds has been traveled.
         location = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        location.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 5, listener); //set min distance proper units
+        location.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 5, listener);
     }
 
-    public int compareSpeed() {
+    public int compareSpeed() {// Decides if ad driving event has occured by difference in seed in a five second period.
         if (mphFl - prevMphFl <= -10f && !MainActivity.isWalking) {
-            Log.i("checkSlow", "Big breaks");
             eventInt = 1;
             return 1;
         } else if (mphFl - prevMphFl >= 10f && !MainActivity.isWalking) {
-            Log.i("checkSlow", "Big gas");
             eventInt = 2;
             return 2;
         } else if (MainActivity.isWalking) {
-            Log.i("checkSlow", "EVENT 3");
             eventInt = 3;
             return 3;
         } else {
-            Log.i("checkSlow", "No event");
             eventInt = 0;
             return 0;
         }
